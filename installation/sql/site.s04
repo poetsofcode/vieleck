@@ -1,0 +1,427 @@
+/**ABDB**/CREATE TABLE `#__acym_campaign` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sending_date` datetime DEFAULT NULL,
+  `draft` tinyint(1) DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `mail_id` int(11) DEFAULT NULL,
+  `sent` tinyint(1) NOT NULL DEFAULT 0,
+  `sending_type` varchar(16) DEFAULT NULL,
+  `sending_params` text DEFAULT NULL,
+  `parent_id` int(11) DEFAULT NULL,
+  `last_generated` int(11) DEFAULT NULL,
+  `next_trigger` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_vq3ai_acym_campaign_has_mail1` (`mail_id`),
+  CONSTRAINT `fk_vq3ai_acym_campaign_has_mail1` FOREIGN KEY (`mail_id`) REFERENCES `#__acym_mail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/CREATE TABLE `#__acym_list` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `visible` tinyint(1) NOT NULL DEFAULT 1,
+  `clean` tinyint(1) DEFAULT NULL,
+  `color` varchar(30) DEFAULT NULL,
+  `creation_date` datetime DEFAULT NULL,
+  `welcome_id` int(11) DEFAULT NULL,
+  `unsubscribe_id` int(11) DEFAULT NULL,
+  `cms_user_id` int(11) NOT NULL,
+  `front_management` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_vq3ai_acym_list_has_mail1` (`welcome_id`),
+  KEY `fk_vq3ai_acym_list_has_mail2` (`unsubscribe_id`),
+  CONSTRAINT `fk_vq3ai_acym_list_has_mail1` FOREIGN KEY (`welcome_id`) REFERENCES `#__acym_mail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vq3ai_acym_list_has_mail2` FOREIGN KEY (`unsubscribe_id`) REFERENCES `#__acym_mail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_list`  VALUES 
+('1', 'Newsletters', '1', '1', NULL, '#3366ff', '2020-01-21 18:28:38', NULL, NULL, '595', NULL),
+('2', 'Testing list', '1', '0', NULL, '#94d4a6', '2020-01-21 18:29:07', NULL, NULL, '595', NULL);
+/**ABDB**/CREATE TABLE `#__acym_user_has_list` (
+  `user_id` int(11) NOT NULL,
+  `list_id` int(11) NOT NULL,
+  `status` tinyint(1) NOT NULL,
+  `subscription_date` datetime NOT NULL,
+  `unsubscribe_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`user_id`,`list_id`),
+  KEY `fk_vq3ai_acym_user_has_list1` (`list_id`),
+  KEY `fk_vq3ai_acym_user_has_list2` (`user_id`),
+  CONSTRAINT `fk_vq3ai_acym_user_has_list1` FOREIGN KEY (`user_id`) REFERENCES `#__acym_user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vq3ai_acym_user_has_list2` FOREIGN KEY (`list_id`) REFERENCES `#__acym_list` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_user_has_list`  VALUES 
+('1', '2', '1', '2020-01-21 19:29:07', NULL),
+('2', '1', '1', '2020-01-23 14:49:53', NULL);
+/**ABDB**/CREATE TABLE `#__acym_user_stat` (
+  `user_id` int(11) NOT NULL,
+  `mail_id` int(11) NOT NULL,
+  `send_date` datetime DEFAULT NULL,
+  `fail` int(11) NOT NULL DEFAULT 0,
+  `sent` int(11) NOT NULL DEFAULT 0,
+  `open` int(11) NOT NULL DEFAULT 0,
+  `open_date` datetime DEFAULT NULL,
+  `bounce` tinyint(4) NOT NULL,
+  `bounce_rule` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`user_id`,`mail_id`),
+  KEY `fk_vq3ai_acym_user_stat1` (`mail_id`),
+  CONSTRAINT `fk_vq3ai_acym_user_stat1` FOREIGN KEY (`mail_id`) REFERENCES `#__acym_mail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/CREATE TABLE `#__acym_url_click` (
+  `mail_id` int(11) NOT NULL,
+  `url_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `click` int(11) NOT NULL DEFAULT 0,
+  `date_click` datetime DEFAULT NULL,
+  PRIMARY KEY (`mail_id`,`url_id`,`user_id`),
+  KEY `fk_vq3ai_acym_url_has_url1` (`url_id`),
+  CONSTRAINT `fk_vq3ai_acym_url_click_has_mail` FOREIGN KEY (`mail_id`) REFERENCES `#__acym_mail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vq3ai_acym_url_has_url` FOREIGN KEY (`url_id`) REFERENCES `#__acym_url` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/CREATE TABLE `#__acym_queue` (
+  `mail_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `sending_date` datetime NOT NULL,
+  `priority` int(11) NOT NULL DEFAULT 2,
+  `try` tinyint(4) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`mail_id`,`user_id`),
+  KEY `fk_vq3ai_acym_queue1` (`mail_id`),
+  KEY `fk_vq3ai_acym_queue2` (`user_id`),
+  CONSTRAINT `fk_vq3ai_acym_queue1` FOREIGN KEY (`mail_id`) REFERENCES `#__acym_mail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vq3ai_acym_queue2` FOREIGN KEY (`user_id`) REFERENCES `#__acym_user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/CREATE TABLE `#__acym_mail_stat` (
+  `mail_id` int(11) NOT NULL,
+  `total_subscribers` int(11) NOT NULL DEFAULT 0,
+  `sent` int(11) DEFAULT 0,
+  `send_date` datetime DEFAULT NULL,
+  `fail` int(11) DEFAULT 0,
+  `open_unique` int(11) NOT NULL DEFAULT 0,
+  `open_total` int(11) NOT NULL DEFAULT 0,
+  `bounce_unique` mediumint(8) NOT NULL,
+  `bounce_details` longtext DEFAULT NULL,
+  PRIMARY KEY (`mail_id`),
+  CONSTRAINT `fk_vq3ai_acym_mail_stat1` FOREIGN KEY (`mail_id`) REFERENCES `#__acym_mail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/CREATE TABLE `#__acym_mail_has_list` (
+  `mail_id` int(11) NOT NULL,
+  `list_id` int(11) NOT NULL,
+  PRIMARY KEY (`mail_id`,`list_id`),
+  KEY `fk_vq3ai_acym_mail_has_list1` (`list_id`),
+  KEY `fk_vq3ai_acym_mail_has_list2` (`mail_id`),
+  CONSTRAINT `fk_vq3ai_acym_mail_has_list1` FOREIGN KEY (`mail_id`) REFERENCES `#__acym_mail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vq3ai_acym_mail_has_list2` FOREIGN KEY (`list_id`) REFERENCES `#__acym_list` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/CREATE TABLE `#__acym_history` (
+  `user_id` int(11) NOT NULL,
+  `date` int(11) NOT NULL,
+  `ip` varchar(16) DEFAULT NULL,
+  `action` varchar(50) NOT NULL,
+  `data` text DEFAULT NULL,
+  `source` text DEFAULT NULL,
+  `mail_id` mediumint(9) DEFAULT NULL,
+  PRIMARY KEY (`user_id`,`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_history`  VALUES 
+('1', '1579631319', '', 'created', 'EXECUTED_BY::595 ( Jamie Ashbrook )', 'HTTP_REFERER::http://localhost/test/joomla/wjharz/administrator/index.php?option=com_installer\nHTTP_USER_AGENT::Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36\nHTTP_HOST::localhost\nSERVER_ADDR::::1\nREMOTE_ADDR::::1\nREQUEST_URI::/test/joomla/wjharz/administrator/index.php?option=com_installer&view=install\nQUERY_STRING::option=com_installer&view=install', '0'),
+('1', '1579631348', '', 'subscribed', 'Lists n° 2\nEXECUTED_BY::595 ( Jamie Ashbrook )', 'HTTP_REFERER::http://localhost/test/joomla/wjharz/administrator/index.php?option=com_acym&ctrl=dashboard\nHTTP_USER_AGENT::Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36\nHTTP_HOST::localhost\nSERVER_ADDR::::1\nREMOTE_ADDR::::1\nREQUEST_URI::/test/joomla/wjharz/administrator/index.php?option=com_acym&ctrl=dashboard\nQUERY_STRING::option=com_acym&ctrl=dashboard', '0'),
+('2', '1579787391', '', 'created', '', 'HTTP_REFERER::http://localhost/test/joomla/wjharz/index.php/kontakt\nHTTP_USER_AGENT::Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36\nHTTP_HOST::localhost\nSERVER_ADDR::::1\nREMOTE_ADDR::::1\nREQUEST_URI::/test/joomla/wjharz/index.php/kontakt', '0'),
+('2', '1579787392', '', 'subscribed', 'Lists n° 1', 'HTTP_REFERER::http://localhost/test/joomla/wjharz/index.php/kontakt\nHTTP_USER_AGENT::Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36\nHTTP_HOST::localhost\nSERVER_ADDR::::1\nREMOTE_ADDR::::1\nREQUEST_URI::/test/joomla/wjharz/index.php/kontakt', '0');
+/**ABDB**/CREATE TABLE `#__acym_field` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `value` longtext DEFAULT NULL,
+  `active` tinyint(3) NOT NULL,
+  `default_value` longtext DEFAULT NULL,
+  `required` tinyint(3) DEFAULT NULL,
+  `ordering` int(11) NOT NULL,
+  `option` longtext DEFAULT NULL,
+  `core` tinyint(3) DEFAULT NULL,
+  `backend_edition` tinyint(3) DEFAULT NULL,
+  `backend_listing` tinyint(3) DEFAULT NULL,
+  `backend_filter` tinyint(3) DEFAULT NULL,
+  `frontend_edition` tinyint(3) DEFAULT NULL,
+  `frontend_listing` tinyint(3) DEFAULT NULL,
+  `frontend_filter` tinyint(3) DEFAULT NULL,
+  `access` varchar(255) DEFAULT NULL,
+  `namekey` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_field`  VALUES 
+('1', 'ACYM_NAME', 'text', NULL, '1', NULL, '0', '1', '{\"editable_user_creation\":\"1\",\"editable_user_modification\":\"1\",\"error_message\":\"\",\"error_message_invalid\":\"\",\"size\":\"\",\"rows\":\"\",\"columns\":\"\",\"format\":\"\",\"custom_text\":\"\",\"css_class\":\"\",\"authorized_content\":{\"0\":\"all\",\"regex\":\"\"}}', '1', '1', '1', '0', '1', '1', '0', 'all', 'acym_name'),
+('2', 'ACYM_EMAIL', 'text', NULL, '1', NULL, '1', '2', '{\"editable_user_creation\":\"1\",\"editable_user_modification\":\"1\",\"error_message\":\"\",\"error_message_invalid\":\"\",\"size\":\"\",\"rows\":\"\",\"columns\":\"\",\"format\":\"\",\"custom_text\":\"\",\"css_class\":\"\",\"authorized_content\":{\"0\":\"all\",\"regex\":\"\"}}', '1', '1', '1', '0', '1', '1', '0', 'all', 'acym_name');
+/**ABDB**/CREATE TABLE `#__acym_user_has_field` (
+  `user_id` int(11) NOT NULL,
+  `field_id` int(11) NOT NULL,
+  `value` longtext DEFAULT NULL,
+  PRIMARY KEY (`user_id`,`field_id`),
+  KEY `fk_vq3ai_acym_user_has_field1` (`field_id`),
+  KEY `fk_vq3ai_acym_user_has_field2` (`user_id`),
+  CONSTRAINT `fk_vq3ai_acym_user_has_field1` FOREIGN KEY (`user_id`) REFERENCES `#__acym_user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vq3ai_acym_user_has_field2` FOREIGN KEY (`field_id`) REFERENCES `#__acym_field` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/CREATE TABLE `#__acym_configuration` (
+  `name` varchar(255) NOT NULL,
+  `value` text NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_configuration`  VALUES 
+('acy_notification_confirm', ''),
+('acy_notification_create', ''),
+('acy_notification_profile', ''),
+('acy_notification_subform', ''),
+('acy_notification_unsub', ''),
+('acy_notification_unsuball', ''),
+('add_names', '1'),
+('allowed_files', 'zip,doc,docx,pdf,xls,txt,gzip,rar,jpg,jpeg,gif,xlsx,pps,csv,bmp,ico,odg,odp,ods,odt,png,ppt,swf,xcf,mp3,wma'),
+('allow_modif', 'data'),
+('allow_visitor', '1'),
+('anonymizeold', '0'),
+('anonymous_tracking', '0'),
+('bounceVersion', '1'),
+('bounce_action_lists_maxtry', '1'),
+('bounce_action_maxtry', 'noaction'),
+('bounce_email', 'email@email.com'),
+('captcha', '0'),
+('charset', 'UTF-8'),
+('confirmation_message', '1'),
+('confirm_redirect', '');
+/**ABDB**/INSERT INTO `#__acym_configuration`  VALUES 
+('cron_frequency', '900'),
+('cron_fromip', ''),
+('cron_fullreport', '1'),
+('cron_last', '0'),
+('cron_next', '1251990901'),
+('cron_report', ''),
+('cron_savepath', 'media/com_acym\\logs\\report{year}_{month}.log'),
+('cron_savereport', '2'),
+('cron_sendreport', '2'),
+('cron_sendto', 'email@email.com'),
+('css_backend', ''),
+('css_frontend', ''),
+('daily_hour', '12'),
+('daily_minute', '00'),
+('dkim', ''),
+('dkim_private', '-----BEGIN PRIVATE KEY-----\r\nMIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBALPzSCiYYgy/h8si\r\nWgsKzwge1zKwggeiT4J6jEbpZHl2qH+VQPIQCf+2a2HHq6ByNENCt+BShWBaXOyY\r\noJJG38m5uaYQ4/TPvB4jFnMunOFPdm7XohYWrDDF7r85NpNYduVxiSgp82E852pU\r\neAo1hz/Eo0Lyc1/kgdoEdNSJLMbXAgMBAAECgYEAruPMx5eCA73J7kTOmljA6bV/\r\nlMYzOdQnzjnoR6rheaM3E/gtDJVGAn56UqfKR792x7/6EUxiUEjCczfLJx82sqd0\r\nw4gTIln45Cs8DvBhl/oFlV0kcmIXwb5nG7rhBso+ClEFLUmIETBX4PVg+OuJyTKa\r\nHdeRzJzlp3QtyojR1sECQQDlJADd+JJYrCMtjfuLGsmxRSCtjhMk/fe8n6bdOkNb\r\na285bqWKnYjGgNxbrZks4rtesgDbvJQb+iNizDeCVYrxAkEAyQsv9og2d171FR+K\r\nfLA9TbzY0w4KdTRw8WpSH6FHTUXmIk4sCZ9B9x2h+XVQNfXjJUrDq2cDiwsHIQfZ\r\nkdseRwJBALALhDsF0fIcdn52Wi8aaqEuehe9UwoVsTMS+dF4BO4E0ZQvZTHlLINN\r\n1378FfX9UHVFjxFDhgskl/E88tzIuhECQG2GGbgN1tZLNesvBqwM+yi5g8ne8VWO\r\nnyT1zg2LOCPhu5De02DekPpF+3LCNVNgREGRrG1ZLnX2KQkWlLHAFIsCQDOL2Zyv\r\nlU8DKUHJgjTsHA9h6CtvUGAsB2N+40qmmoiJVqrZTkL3vY31ztyuBPhCRMmzindP\r\n0nPX2GMI2gyWIJY=\r\n-----END PRIVATE KEY-----\r\n'),
+('dkim_public', 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCz80gomGIMv4fLIloLCs8IHtcysIIHok+CeoxG6WR5dqh/lUDyEAn/tmthx6ugcjRDQrfgUoVgWlzsmKCSRt/JubmmEOP0z7weIxZzLpzhT3Zu16IWFqwwxe6/OTaTWHblcYkoKfNhPOdqVHgKNYc/xKNC8nNf5IHaBHTUiSzG1wIDAQAB'),
+('editor', 'codemirror'),
+('elasticemail_password', ''),
+('elasticemail_port', 'rest');
+/**ABDB**/INSERT INTO `#__acym_configuration`  VALUES 
+('elasticemail_username', ''),
+('email_checkdomain', ''),
+('embed_files', '1'),
+('embed_images', '0'),
+('encoding_format', '8bit'),
+('Enterprise', '2'),
+('Essential', '1'),
+('expirationdate', '0'),
+('export_excelsecurity', '1'),
+('forward', '0'),
+('from_as_replyto', '1'),
+('from_email', 'email@email.com'),
+('from_name', 'Vieleck'),
+('gdpr_delete', '0'),
+('gdpr_export', '0'),
+('generate_name', '1'),
+('hostname', ''),
+('installcomplete', '1'),
+('install_date', '1579631318'),
+('introjs', '{\"configuration__mail-settings\":1}');
+/**ABDB**/INSERT INTO `#__acym_configuration`  VALUES 
+('lastlicensecheck', '1583797263'),
+('last_import', ''),
+('latestversion', '6.9.0'),
+('level', 'Starter'),
+('mailer_method', 'smtp'),
+('max_execution_time', '0'),
+('migration', '1'),
+('multiple_part', '1'),
+('notifications', '[{\"message\":\"D:\\\\Xampp\\\\htdocs\\\\test\\\\joomla\\\\wjharz\\\\administrator\\\\components\\\\com_acym\\\\extensions\\\\mod_acym\\\\tmpl\\\\default.php is not a file\",\"date\":1579631334,\"read\":false,\"level\":\"error\",\"id\":\"5e2742e603570\"}]'),
+('notification_accept', ''),
+('notification_created', ''),
+('notification_refuse', ''),
+('notification_unsuball', ''),
+('numberThumbnail', '2'),
+('prevent_hyphens', ''),
+('priority_followup', '2'),
+('priority_newsletter', '3'),
+('queue_nbmail', '40'),
+('queue_nbmail_auto', '70'),
+('queue_pause', '120');
+/**ABDB**/INSERT INTO `#__acym_configuration`  VALUES 
+('queue_try', '3'),
+('queue_type', 'auto'),
+('recaptcha_secretkey', ''),
+('recaptcha_sitekey', ''),
+('regacy', '1'),
+('regacy_autolists', ''),
+('regacy_checkedlists', ''),
+('regacy_delete', '1'),
+('regacy_forceconf', '0'),
+('regacy_lists', ''),
+('regacy_listsposition', 'password'),
+('regacy_listspositioncustom', ''),
+('regacy_text', ''),
+('remindme', '[]'),
+('replyto_email', 'email@email.com'),
+('replyto_name', 'Vieleck'),
+('require_confirmation', '1'),
+('security_key', 'AYxbKENQJAIlZnoQRRXTjoNqEDmji8'),
+('sending_platform', 'external'),
+('sendmail_path', '/usr/sbin/sendmail');
+/**ABDB**/INSERT INTO `#__acym_configuration`  VALUES 
+('sendorder', 'user_id, ASC'),
+('smtp_auth', '0'),
+('smtp_host', 'localhost'),
+('smtp_keepalive', ''),
+('smtp_password', ''),
+('smtp_port', '25'),
+('smtp_secured', ''),
+('smtp_username', ''),
+('social_icons', '{\"facebook\": \"http://localhost/test/joomla/wjharz/media/com_acym/images/logo/facebook.png\", \"twitter\": \"http://localhost/test/joomla/wjharz/media/com_acym/images/logo/twitter.png\", \"instagram\": \"http://localhost/test/joomla/wjharz/media/com_acym/images/logo/instagram.png\", \"linkedin\": \"http://localhost/test/joomla/wjharz/media/com_acym/images/logo/linkedin.png\", \"pinterest\": \"http://localhost/test/joomla/wjharz/media/com_acym/images/logo/pinterest.png\", \"vimeo\": \"http://localhost/test/joomla/wjharz/media/com_acym/images/logo/vimeo.png\", \"wordpress\": \"http://localhost/test/joomla/wjharz/media/com_acym/images/logo/wordpress.png\", \"youtube\": \"http://localhost/test/joomla/wjharz/media/com_acym/images/logo/youtube.png\"}'),
+('special_chars', ''),
+('Starter', '0'),
+('subscription_message', '1'),
+('templates_installed', '0'),
+('trackingsystem', 'acymailing,1'),
+('trackingsystemexternalwebsite', '1'),
+('unsubscribe_page', '1'),
+('unsub_message', '1'),
+('unsub_reasons', 'a:2:{i:0;s:21:\"UNSUB_SURVEY_FREQUENT\";i:1;s:21:\"UNSUB_SURVEY_RELEVANT\";}'),
+('unsub_redirect', ''),
+('uploadfolder', 'media/com_acym\\upload\\');
+/**ABDB**/INSERT INTO `#__acym_configuration`  VALUES 
+('use_https', ''),
+('use_sef', '0'),
+('version', '6.9.2'),
+('walkthrough_params', '{\"step\":\"stepGmail\",\"mail_id\":\"3\",\"list_id\":2}'),
+('walk_through', '0'),
+('website', 'http://localhost/test/joomla/onepage/'),
+('welcome_message', '1'),
+('word_wrapping', '150');
+/**ABDB**/CREATE TABLE `#__acym_automation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` longtext DEFAULT NULL,
+  `active` tinyint(3) NOT NULL,
+  `report` text DEFAULT NULL,
+  `tree` longtext DEFAULT NULL,
+  `admin` tinyint(3) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_automation`  VALUES 
+('1', 'ACYM_ADMIN_USER_CREATE', 'ACYM_ADMIN_USER_CREATE_DESC', '0', NULL, NULL, '1'),
+('2', 'ACYM_ADMIN_USER_MODIFICATION', 'ACYM_ADMIN_USER_MODIFICATION_DESC', '0', NULL, NULL, '1');
+/**ABDB**/CREATE TABLE `#__acym_step` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `triggers` longtext DEFAULT NULL,
+  `automation_id` int(11) NOT NULL,
+  `last_execution` int(11) DEFAULT NULL,
+  `next_execution` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fkvq3ai_acym__step1` (`automation_id`),
+  CONSTRAINT `fkvq3ai_acym__step1` FOREIGN KEY (`automation_id`) REFERENCES `#__acym_automation` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_step`  VALUES 
+('1', 'ACYM_ADMIN_USER_CREATE', '{\"user_creation\":[\"\"],\"type_trigger\":\"user\"}', '1', NULL, NULL),
+('2', 'ACYM_ADMIN_USER_CREATE', '{\"user_modification\":[\"\"],\"type_trigger\":\"user\"}', '2', NULL, NULL);
+/**ABDB**/CREATE TABLE `#__acym_condition` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `step_id` int(11) NOT NULL,
+  `conditions` longtext DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_vq3ai_acym_condition1` (`step_id`),
+  CONSTRAINT `fk_vq3ai_acym_condition1` FOREIGN KEY (`step_id`) REFERENCES `#__acym_step` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_condition`  VALUES 
+('1', '1', '{\"type_condition\":\"user\"}'),
+('2', '2', '{\"type_condition\":\"user\"}');
+/**ABDB**/CREATE TABLE `#__acym_action` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `condition_id` int(11) NOT NULL,
+  `actions` longtext DEFAULT NULL,
+  `filters` longtext DEFAULT NULL,
+  `order` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_vq3ai_acym_action1` (`condition_id`),
+  CONSTRAINT `fk_vq3ai_acym_action1` FOREIGN KEY (`condition_id`) REFERENCES `#__acym_condition` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/**ABDB**/INSERT INTO `#__acym_action`  VALUES 
+('1', '1', '[{\"acy_add_queue\":{\"mail_id\":\"7\",\"time\":\"[time]\"}}]', '{\"0\":{\"1\":{\"acy_field\":{\"field\":\"email\",\"operator\":\"=\",\"value\":\"email@email.com\"}}},\"type_filter\":\"classic\"}', '1'),
+('2', '2', '[{\"acy_add_queue\":{\"mail_id\":\"8\",\"time\":\"[time]\"}}]', '{\"0\":{\"1\":{\"acy_field\":{\"field\":\"email\",\"operator\":\"=\",\"value\":\"email@email.com\"}}},\"type_filter\":\"classic\"}', '1');
+/**ABDB**/CREATE TABLE `#__action_logs_users` (
+  `user_id` int(11) unsigned NOT NULL,
+  `notify` tinyint(1) unsigned NOT NULL,
+  `extensions` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`user_id`),
+  KEY `idx_notify` (`notify`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/**ABDB**/CREATE TABLE `#__action_logs_extensions` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `extension` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/**ABDB**/INSERT INTO `#__action_logs_extensions`  VALUES 
+('1', 'com_banners'),
+('2', 'com_cache'),
+('3', 'com_categories'),
+('4', 'com_config'),
+('5', 'com_contact'),
+('6', 'com_content'),
+('7', 'com_installer'),
+('8', 'com_media'),
+('9', 'com_menus'),
+('10', 'com_messages'),
+('11', 'com_modules'),
+('12', 'com_newsfeeds'),
+('13', 'com_plugins'),
+('14', 'com_redirect'),
+('15', 'com_tags'),
+('16', 'com_templates'),
+('17', 'com_users'),
+('18', 'com_checkin');
+/**ABDB**/CREATE TABLE `#__action_logs` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `message_language_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `extension` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `user_id` int(11) NOT NULL DEFAULT 0,
+  `item_id` int(11) NOT NULL DEFAULT 0,
+  `ip_address` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0.0.0.0',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_user_id_logdate` (`user_id`,`log_date`),
+  KEY `idx_user_id_extension` (`user_id`,`extension`),
+  KEY `idx_extension_item_id` (`extension`,`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/**ABDB**/CREATE TABLE `#__action_log_config` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `type_alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `id_holder` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title_holder` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `table_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `text_prefix` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/**ABDB**/INSERT INTO `#__action_log_config`  VALUES 
+('1', 'article', 'com_content.article', 'id', 'title', '#__content', 'PLG_ACTIONLOG_JOOMLA'),
+('2', 'article', 'com_content.form', 'id', 'title', '#__content', 'PLG_ACTIONLOG_JOOMLA'),
+('3', 'banner', 'com_banners.banner', 'id', 'name', '#__banners', 'PLG_ACTIONLOG_JOOMLA'),
+('4', 'user_note', 'com_users.note', 'id', 'subject', '#__user_notes', 'PLG_ACTIONLOG_JOOMLA'),
+('5', 'media', 'com_media.file', '', 'name', '', 'PLG_ACTIONLOG_JOOMLA'),
+('6', 'category', 'com_categories.category', 'id', 'title', '#__categories', 'PLG_ACTIONLOG_JOOMLA'),
+('7', 'menu', 'com_menus.menu', 'id', 'title', '#__menu_types', 'PLG_ACTIONLOG_JOOMLA'),
+('8', 'menu_item', 'com_menus.item', 'id', 'title', '#__menu', 'PLG_ACTIONLOG_JOOMLA'),
+('9', 'newsfeed', 'com_newsfeeds.newsfeed', 'id', 'name', '#__newsfeeds', 'PLG_ACTIONLOG_JOOMLA'),
+('10', 'link', 'com_redirect.link', 'id', 'old_url', '#__redirect_links', 'PLG_ACTIONLOG_JOOMLA'),
+('11', 'tag', 'com_tags.tag', 'id', 'title', '#__tags', 'PLG_ACTIONLOG_JOOMLA'),
+('12', 'style', 'com_templates.style', 'id', 'title', '#__template_styles', 'PLG_ACTIONLOG_JOOMLA'),
+('13', 'plugin', 'com_plugins.plugin', 'extension_id', 'name', '#__extensions', 'PLG_ACTIONLOG_JOOMLA'),
+('14', 'component_config', 'com_config.component', 'extension_id', 'name', '', 'PLG_ACTIONLOG_JOOMLA'),
+('15', 'contact', 'com_contact.contact', 'id', 'name', '#__contact_details', 'PLG_ACTIONLOG_JOOMLA'),
+('16', 'module', 'com_modules.module', 'id', 'title', '#__modules', 'PLG_ACTIONLOG_JOOMLA'),
+('17', 'access_level', 'com_users.level', 'id', 'title', '#__viewlevels', 'PLG_ACTIONLOG_JOOMLA'),
+('18', 'banner_client', 'com_banners.client', 'id', 'name', '#__banner_clients', 'PLG_ACTIONLOG_JOOMLA'),
+('19', 'application_config', 'com_config.application', '', 'name', '', 'PLG_ACTIONLOG_JOOMLA');
